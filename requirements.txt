@@ -4,3 +4,4 @@ numpy
 pandas
 yfinance
 mpl_interactions
+plotly
