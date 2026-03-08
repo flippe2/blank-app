@@ -1,9 +1,6 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
-import datetime as dt
-import os
-from pathlib import Path
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
@@ -101,24 +98,87 @@ def needs_update(filepath, symbol):
 # Téléchargement intelligent
 # -------------------------
 @st.cache_data(ttl=3600)  # Cache d'une heure pour éviter trop de lectures
+import streamlit as st
+import yfinance as yf
+import pandas as pd
+import datetime as dt
+from symbolsdict import ind_global, ind_emergent, ind_commod, ind_macro, ind_sector
+
+# -------------------------
+# Paramètres
+# -------------------------
+folder = "data/"
+PERIOD = "6mo"
+
+# Jours fériés
+holidays = [
+    dt.datetime(2025, 11, 27).date(),
+    dt.datetime(2025, 12, 25).date(),
+    dt.datetime(2026, 1, 1).date(),
+    dt.datetime(2026, 1, 19).date(),
+    dt.datetime(2026, 2, 16).date(),
+    dt.datetime(2026, 4, 3).date(),
+    dt.datetime(2026, 6, 19).date(),
+    dt.datetime(2026, 7, 3).date(),
+    dt.datetime(2026, 9, 7).date(),
+    dt.datetime(2026, 11, 26).date(),
+    dt.datetime(2026, 12, 25).date(),
+    dt.datetime(2027, 1, 1).date(),
+]
+
+categories = {
+    "ind_global": ind_global,
+    "ind_emergent": ind_emergent,
+    "ind_commod": ind_commod,
+    "ind_macro": ind_macro,
+    "ind_sector": ind_sector
+}
+
+# -------------------------
+# Fonctions utilitaires (sans os)
+# -------------------------
+def get_last_business_day():
+    """Retourne la dernière date de bourse"""
+    today = dt.datetime.now().date()
+    last_bday = today - dt.timedelta(days=1)
+    
+    while last_bday.weekday() >= 5 or last_bday in holidays:
+        last_bday -= dt.timedelta(days=1)
+    
+    return last_bday
+
+def read_csv_safe(filepath):
+    """
+    Tente de lire un CSV, retourne None si échec
+    Pas de os.path.exists, on essaye directement
+    """
+    try:
+        df = pd.read_csv(
+            filepath,
+            header=[0, 1],
+            index_col=0,
+            parse_dates=True
+        )
+        return df
+    except:
+        return None
+
+# -------------------------
+# Téléchargement intelligent (sans os)
+# -------------------------
+@st.cache_data(ttl=3600)
 def load_data():
     """
-    Charge les données avec vérification intelligente :
-    - Si fichier absent → téléchargement
-    - Si fichier présent mais date < dernière séance → téléchargement
-    - Sinon → lecture du fichier
+    Charge les données avec try/except uniquement
     """
     data = {}
     
-    # Créer le dossier data s'il n'existe pas
-    Path(folder).mkdir(parents=True, exist_ok=True)
-    
-    # Barre de progression
     total_assets = sum(len(assets) for assets in categories.values())
     progress_bar = st.progress(0, text="Vérification des données...")
     status_text = st.empty()
     
     asset_count = 0
+    last_bday = get_last_business_day()
     
     for cat, assets in categories.items():
         cat_df = pd.DataFrame()
@@ -127,19 +187,28 @@ def load_data():
             symbol = asset["symbol"]
             filepath = folder + symbol + ".csv"
             
-            # Mise à jour de la progression
             asset_count += 1
             progress_bar.progress(asset_count / total_assets)
             status_text.text(f"📊 Traitement de {symbol}...")
             
-            try:
-                # Vérifier si mise à jour nécessaire
-                need_update, reason = needs_update(filepath, symbol)
-                
-                if need_update:
-                    # Téléchargement
-                    status_text.text(f"📥 Téléchargement de {symbol} ({reason})...")
-                    
+            # Étape 1 : Essayer de lire le fichier existant
+            df = read_csv_safe(filepath)
+            need_download = False
+            
+            if df is not None and len(df) > 0:
+                # Fichier existe, vérifier la date
+                last_date = df.index[-1].date()
+                if last_date < last_bday:
+                    need_download = True
+                    status_text.text(f"📥 Mise à jour de {symbol} (dernier: {last_date})...")
+            else:
+                # Fichier inexistant ou illisible
+                need_download = True
+                status_text.text(f"📥 Téléchargement de {symbol}...")
+            
+            # Étape 2 : Télécharger si nécessaire
+            if need_download:
+                try:
                     df = yf.download(
                         symbol,
                         period=PERIOD,
@@ -147,33 +216,40 @@ def load_data():
                         progress=False
                     )
                     
-                    if len(df) == 0:
-                        st.warning(f"⚠️ Pas de données pour {symbol}")
-                        continue
-                    
-                    # Sauvegarde
-                    df.to_csv(filepath, index=True, date_format='%Y-%m-%d')
-                    
-                else:
-                    # Lecture du fichier existant
-                    df = pd.read_csv(
-                        filepath,
-                        header=[0, 1],
-                        index_col=0,
-                        parse_dates=True
-                    )
-                
-                # Normalisation des données
-                series = df["Close"]
-                norm = 100 * series / series.iloc[-1]
-                cat_df[symbol] = norm
-                
-            except Exception as e:
-                st.warning(f"⚠️ Erreur pour {symbol}: {str(e)[:100]}")
-                continue
+                    if len(df) > 0:
+                        # Sauvegarde (le dossier data/ doit exister)
+                        try:
+                            df.to_csv(filepath, index=True, date_format='%Y-%m-%d')
+                        except:
+                            # Si le dossier n'existe pas, on ignore la sauvegarde
+                            pass
+                except Exception as e:
+                    st.warning(f"⚠️ Échec téléchargement {symbol}: {str(e)[:50]}")
+                    continue
+            
+            # Étape 3 : Normalisation si on a des données
+            if df is not None and len(df) > 0:
+                try:
+                    series = df["Close"]
+                    norm = 100 * series / series.iloc[-1]
+                    cat_df[symbol] = norm
+                except:
+                    pass
         
         if not cat_df.empty:
             data[cat] = cat_df
+    
+    progress_bar.empty()
+    status_text.empty()
+    
+    # Catégorie summary
+    summary_df = pd.DataFrame()
+    for cat in data:
+        mean_curve = data[cat].mean(axis=1)
+        summary_df[cat] = mean_curve
+    data["summary"] = summary_df
+    
+    return data
     
     # Nettoyage des indicateurs de progression
     progress_bar.empty()
@@ -187,7 +263,7 @@ def load_data():
     data["summary"] = summary_df
     
     # Résumé des mises à jour
-    st.success(f"✅ Données chargées - {len(data)-1} catégories disponibles")
+    st.success(f"Données chargées - {len(data)-1} catégories disponibles")
     
     return data
     
