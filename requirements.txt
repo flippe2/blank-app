@@ -6,3 +6,4 @@ yfinance
 mpl_interactions
 plotly
 datetime
+AuthManager
