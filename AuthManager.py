@@ -40,15 +40,64 @@ def main():
         console_interface(auth_data)
 
 # ============================================
-# VERSION STREAMLIT (corrigée)
+# VERSION STREAMLIT (compacte)
 # ============================================
 
 def streamlit_interface(auth_data):
-    """Interface Streamlit avec gestion d'état"""
+    """Interface Streamlit compacte"""
     
-    st.title("🔐 Portail d'applications")
+    # Configuration de la page
+    st.set_page_config(
+        page_title="Portail",
+        page_icon="🔐",
+        layout="wide"
+    )
     
-    # Initialisation de l'état de session
+    # CSS personnalisé pour réduire les tailles
+    st.markdown("""
+        <style>
+        /* Réduire la taille des titres */
+        .main .block-container h1 {
+            font-size: 1.8rem !important;
+            padding-top: 0.5rem !important;
+        }
+        .main .block-container h2 {
+            font-size: 1.3rem !important;
+        }
+        .main .block-container h3 {
+            font-size: 1.1rem !important;
+        }
+        /* Réduire l'espacement */
+        .main .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        /* Métriques plus petites */
+        div[data-testid="metric-container"] {
+            padding: 0.5rem !important;
+        }
+        div[data-testid="metric-container"] label {
+            font-size: 0.8rem !important;
+        }
+        div[data-testid="metric-container"] div {
+            font-size: 1.2rem !important;
+        }
+        /* Boutons plus compacts */
+        .stButton button {
+            padding: 0.2rem 0.5rem !important;
+            font-size: 0.9rem !important;
+        }
+        /* Réduire les marges */
+        .stMarkdown {
+            margin-bottom: 0.3rem !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Titre compact
+    st.title("🔐 Portail")
+    
+    # Initialisation de l'état
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
         st.session_state.user_key = None
@@ -56,78 +105,78 @@ def streamlit_interface(auth_data):
     
     # Écran de connexion
     if not st.session_state.authenticated:
-        cle = st.text_input("Clé d'accès", type="password", key="login_input")
-        
-        if cle:  # Si une clé est entrée
-            if cle in auth_data:
-                st.session_state.authenticated = True
-                st.session_state.user_key = cle
-                st.session_state.user_data = auth_data[cle]
-                st.rerun()  # Recharge l'interface
-            else:
-                st.error("❌ Clé invalide")
-        return  # Sortie pour ne pas afficher le reste
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            cle = st.text_input("Clé", type="password", key="login_input", label_visibility="collapsed")
+            
+            if cle:
+                if cle in auth_data:
+                    st.session_state.authenticated = True
+                    st.session_state.user_key = cle
+                    st.session_state.user_data = auth_data[cle]
+                    st.rerun()
+                else:
+                    st.error("❌")
+        return
     
     # Utilisateur connecté
     user = st.session_state.user_data
     
-    # Sidebar avec infos utilisateur et déconnexion
+    # Sidebar compacte
     with st.sidebar:
-        st.header(f"👤 {user['nom']}")
-        st.metric("💰 Solde", f"{user['solde']} crédits")
+        st.markdown(f"**{user['nom']}**")
+        st.metric("💰", f"{user['solde']}")
         
-        if st.button("🚪 Déconnexion", key="logout_btn"):
+        if st.button("🚪", key="logout_btn", help="Déconnexion"):
             st.session_state.authenticated = False
             st.session_state.user_key = None
             st.session_state.user_data = None
             st.rerun()
     
-    # Applications disponibles
-    st.header("📋 Applications disponibles")
-    
+    # Applications en grille compacte
     apps = user["apps"]
     
+    # 3 colonnes pour les apps
+    cols = st.columns(3)
+    
     for i, app in enumerate(apps):
-        with st.container():
-            st.subheader(f"📊 {app['nom']}")
-            
-            col1, col2, col3 = st.columns([2, 1, 1])
-            
-            with col1:
-                st.write(f"Script: `{app['fichier']}`")
-            
-            with col2:
-                st.metric("Coût", f"{app['cout_par_utilisation']} crédits")
-            
-            # Paramètres additionnels
-            params_key = f"params_{i}_{st.session_state.user_key}"
-            user_params = st.text_input(
-                "Paramètres additionnels",
-                key=params_key,
-                placeholder="ex: period=3mo"
-            )
-            
-            full_params = app["params_fixes"]
-            if user_params:
-                full_params += " " + user_params
-            
-            # Bouton de lancement
-            btn_key = f"run_{i}_{st.session_state.user_key}"
-            
-            with col3:
-                if st.button("🚀 Lancer", key=btn_key):
+        with cols[i % 3]:
+            with st.container():
+                # Nom et coût sur la même ligne
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.markdown(f"**{app['nom']}**")
+                with col2:
+                    st.markdown(f"`{app['cout_par_utilisation']}`")
+                
+                # Paramètres
+                params_key = f"p_{i}_{st.session_state.user_key}"
+                user_params = st.text_input(
+                    "📝",
+                    key=params_key,
+                    placeholder=app['params_fixes'],
+                    label_visibility="collapsed"
+                )
+                
+                full_params = app["params_fixes"]
+                if user_params:
+                    full_params += " " + user_params
+                
+                # Bouton de lancement
+                btn_key = f"r_{i}_{st.session_state.user_key}"
+                if st.button("▶️", key=btn_key, use_container_width=True):
                     run_application(app, full_params, st.session_state.user_key, auth_data)
-            
-            st.markdown("---")
+                
+                st.markdown("---")  # Séparateur léger
 
 def run_application(app, full_params, user_key, auth_data):
-    """Exécute une application et met à jour le solde"""
+    """Exécute une application"""
     
     cout = app["cout_par_utilisation"]
     user = auth_data[user_key]
     
     if user["solde"] < cout:
-        st.error("❌ Solde insuffisant")
+        st.error("❌ Solde")
         return
     
     # Facturation
@@ -136,15 +185,16 @@ def run_application(app, full_params, user_key, auth_data):
     auth_data[user_key] = user
     save_auth(auth_data)
     
-    # Mise à jour de l'état session
+    # Mise à jour de l'état
     st.session_state.user_data = user
     
-    st.success(f"✅ {cout} crédits consommés. Nouveau solde: {user['solde']}")
+    # Message compact
+    st.toast(f"✅ {cout} crédits")
     
-    # Exécution du script
+    # Exécution
     try:
         cmd = [
-            sys.executable,  # Utilise le même Python
+            sys.executable,
             app["fichier"],
             "--key",
             user_key,
@@ -152,35 +202,23 @@ def run_application(app, full_params, user_key, auth_data):
             full_params
         ]
         
-        with st.spinner("Exécution en cours..."):
+        with st.spinner("..."):
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=30  # Timeout de 30 secondes
+                timeout=30
             )
         
-        # Affichage des résultats
-        st.write("### 📤 Résultat de l'exécution")
-        
-        if result.stdout:
-            st.code(result.stdout, language="text")
-        
-        if result.stderr:
-            st.error("### ⚠️ Erreurs")
-            st.code(result.stderr, language="text")
-        
-        if result.returncode == 0:
-            st.success("✅ Script terminé avec succès")
-        else:
-            st.warning(f"⚠️ Script terminé avec le code {result.returncode}")
-            
-    except subprocess.TimeoutExpired:
-        st.error("❌ Temps d'exécution dépassé (30s)")
-    except FileNotFoundError:
-        st.error(f"❌ Script '{app['fichier']}' introuvable")
+        # Résultats dans un expander
+        with st.expander("📊 Résultat", expanded=False):
+            if result.stdout:
+                st.code(result.stdout[:500] + "..." if len(result.stdout) > 500 else result.stdout)
+            if result.stderr:
+                st.error(result.stderr[:200])
+                
     except Exception as e:
-        st.error(f"❌ Erreur: {str(e)}")
+        st.error(f"❌ {str(e)[:50]}")
 
 # ============================================
 # VERSION CONSOLE (inchangée)
@@ -189,74 +227,67 @@ def run_application(app, full_params, user_key, auth_data):
 def console_interface(auth_data):
     """Interface console existante"""
     while True:
-        print("\n🔐 PORTAIL D'APPLICATIONS\n")
-        cle = input("Clé d'accès (ou 'quit'): ").strip()
+        print("\n🔐 PORTAIL\n")
+        cle = input("Clé (ou 'quit'): ").strip()
         
         if cle.lower() == 'quit':
             break
             
         if cle not in auth_data:
-            print("❌ Clé invalide")
+            print("❌")
             continue
         
         user = auth_data[cle]
         
         while True:
-            print("\n" + "="*50)
-            print(f"👤 {user['nom']} - 💰 {user['solde']} crédits")
-            print("="*50)
+            print("\n" + "="*30)
+            print(f"{user['nom']} - 💰 {user['solde']}")
+            print("="*30)
             
             apps = user["apps"]
             
-            print("\nApplications disponibles :")
+            print("\nApps:")
             for i, app in enumerate(apps, 1):
-                print(f"{i}. {app['nom']} ({app['cout_par_utilisation']} crédits)")
-            print("0. Déconnexion")
+                print(f"{i}. {app['nom']} ({app['cout_par_utilisation']})")
+            print("0. Exit")
             
-            choix = input("\nChoix : ").strip()
+            choix = input("\nChoix: ").strip()
             
             if choix == "0":
-                print("👋 Déconnexion")
                 break
             
             try:
                 idx = int(choix) - 1
                 if idx < 0 or idx >= len(apps):
-                    print("❌ Choix invalide")
+                    print("❌")
                     continue
-            except ValueError:
-                print("❌ Choix invalide")
+            except:
+                print("❌")
                 continue
             
             app = apps[idx]
             
-            print(f"\n📊 {app['nom']}")
-            print(f"Paramètres fixes: {app['params_fixes']}")
-            
-            params = input("Paramètres additionnels (Entrée pour aucun): ").strip()
+            params = input("Params (Entrée pour aucun): ").strip()
             
             full_params = app["params_fixes"]
             if params:
                 full_params += " " + params
             
-            cout = app["cout_par_utilisation"]
-            
-            if user["solde"] < cout:
-                print("❌ Solde insuffisant")
+            if user["solde"] < app["cout_par_utilisation"]:
+                print("❌ Solde")
                 continue
             
             # Facturation
-            user["solde"] -= cout
+            user["solde"] -= app["cout_par_utilisation"]
             user["last_use"] = datetime.now().isoformat()
             auth_data[cle] = user
             save_auth(auth_data)
             
-            print(f"✅ {cout} crédits consommés. Nouveau solde: {user['solde']}")
+            print(f"✅ {app['cout_par_utilisation']} crédits")
             
-            # Vérification fichier
             import os
             if not os.path.exists(app["fichier"]):
-                print(f"❌ Script '{app['fichier']}' introuvable")
+                print("❌ Fichier")
                 continue
             
             cmd = [
@@ -268,24 +299,12 @@ def console_interface(auth_data):
                 full_params
             ]
             
-            print(f"\n🚀 Exécution de: {' '.join(cmd)}")
-            
             result = subprocess.run(cmd, capture_output=True, text=True)
             
             if result.stdout:
-                print("\n📤 Résultat:")
-                print(result.stdout)
-            
+                print(result.stdout[:200])
             if result.stderr:
-                print("\n⚠️ Erreurs:")
-                print(result.stderr)
-            
-            if result.returncode == 0:
-                print("\n✅ Succès")
-            else:
-                print(f"\n❌ Échec (code {result.returncode})")
-            
-            input("\nAppuyez sur Entrée pour continuer...")
+                print("⚠️", result.stderr[:100])
 
 # ============================================
 # POINT D'ENTRÉE
