@@ -218,8 +218,9 @@ def page_menu():
                                 st.session_state.app_params = full_params
                                 st.session_state.page = "app"
 
-                                # Basculer vers test.py
-                                st.switch_page("pages/test.py")
+                                # Basculer vers le script app['fichier']
+                                fichier = app["fichier"]
+                                st.switch_page(f"pages/{fichier}")
                             else:
                                 st.error("❌ Solde insuffisant")
 
