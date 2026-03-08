@@ -5,3 +5,6 @@ pandas
 yfinance
 mpl_interactions
 plotly
+datetime
+os
+pathlib
