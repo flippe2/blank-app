@@ -48,7 +48,7 @@ def streamlit_interface(auth_data):
     
     # Configuration de la page
     st.set_page_config(
-        page_title="Portail",
+        page_title="Portail d'applications",
         page_icon="🔐",
         layout="wide"
     )
@@ -127,7 +127,7 @@ def streamlit_interface(auth_data):
         st.markdown(f"**{user['nom']}**")
         st.metric("💰", f"{user['solde']}")
         
-        if st.button("🚪", key="logout_btn", help="Déconnexion"):
+        if st.button("🚪 Déconnexion", key="logout_btn", help="Déconnexion"):
             st.session_state.authenticated = False
             st.session_state.user_key = None
             st.session_state.user_data = None
@@ -137,7 +137,7 @@ def streamlit_interface(auth_data):
     apps = user["apps"]
     
     # 3 colonnes pour les apps
-    cols = st.columns(3)
+    cols = st.columns(4)
     
     for i, app in enumerate(apps):
         with cols[i % 3]:
@@ -147,7 +147,7 @@ def streamlit_interface(auth_data):
                 with col1:
                     st.markdown(f"**{app['nom']}**")
                 with col2:
-                    st.markdown(f"`{app['cout_par_utilisation']}`")
+                    st.markdown(f"coût `{app['cout_par_utilisation']}`")
                 
                 # Paramètres
                 params_key = f"p_{i}_{st.session_state.user_key}"
