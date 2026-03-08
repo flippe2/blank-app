@@ -89,13 +89,13 @@ def streamlit_interface(auth_data):
         }
         /* Réduire les marges */
         .stMarkdown {
-            margin-bottom: 0.3rem !important;
+            margin-bottom: 0.5rem !important;
         }
         </style>
     """, unsafe_allow_html=True)
     
     # Titre compact
-    st.title("🔐 Portail")
+    st.title("🔐 Applications")
     
     # Initialisation de l'état
     if "authenticated" not in st.session_state:
@@ -137,7 +137,7 @@ def streamlit_interface(auth_data):
     apps = user["apps"]
     
     # 3 colonnes pour les apps
-    cols = st.columns(4)
+    cols = st.columns(3)
     
     for i, app in enumerate(apps):
         with cols[i % 3]:
