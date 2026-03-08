@@ -7,3 +7,4 @@ mpl_interactions
 plotly
 datetime
 AuthManager
+subprocess
