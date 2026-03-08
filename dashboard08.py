@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 from symbolsdict import ind_global, ind_emergent, ind_commod, ind_macro, ind_sector
+import datetime as dt
 
 # -------------------------
 # Configuration de la page Streamlit
