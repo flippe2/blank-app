@@ -29,7 +29,6 @@ categories = {
     "ind_sector": ind_sector
 }
 
-
 # Jours fériés (à ajuster selon votre pays/marché)
 holidays = [ 
     dt.datetime(2025, 11, 27).date(),
@@ -94,34 +93,6 @@ def needs_update(filepath, symbol):
     except Exception as e:
         return True, f"erreur de lecture: {str(e)[:50]}"
 
-# -------------------------
-# Téléchargement intelligent
-# -------------------------
-@st.cache_data(ttl=3600)  # Cache d'une heure pour éviter trop de lectures
-
-# Jours fériés
-holidays = [
-    dt.datetime(2025, 11, 27).date(),
-    dt.datetime(2025, 12, 25).date(),
-    dt.datetime(2026, 1, 1).date(),
-    dt.datetime(2026, 1, 19).date(),
-    dt.datetime(2026, 2, 16).date(),
-    dt.datetime(2026, 4, 3).date(),
-    dt.datetime(2026, 6, 19).date(),
-    dt.datetime(2026, 7, 3).date(),
-    dt.datetime(2026, 9, 7).date(),
-    dt.datetime(2026, 11, 26).date(),
-    dt.datetime(2026, 12, 25).date(),
-    dt.datetime(2027, 1, 1).date(),
-]
-
-categories = {
-    "ind_global": ind_global,
-    "ind_emergent": ind_emergent,
-    "ind_commod": ind_commod,
-    "ind_macro": ind_macro,
-    "ind_sector": ind_sector
-}
 
 # -------------------------
 # Fonctions utilitaires (sans os)
