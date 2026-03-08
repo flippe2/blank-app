@@ -264,7 +264,7 @@ def plot_chart(df, signals, x_axis, symbol, buy_or_sell):
             ax.scatter(x_pos, price, marker="v", color="red", s=120, zorder=5,
                        label=f"SELL (score {score})")
 
-    ax.set_title(f"{symbol} — {'BUY' if buy_or_sell else 'SELL'} advisor (score ≥ {alert_score})")
+    ax.set_title(f"{symbol} — {'BUY' if buy_or_sell else 'SELL'} advisor")
     ax.set_xlabel("Minutes depuis ouverture (NY)")
     ax.set_ylabel("Prix ($)")
     ax.grid(True, alpha=0.3)
