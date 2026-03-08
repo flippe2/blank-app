@@ -5,7 +5,3 @@ pandas
 yfinance
 mpl_interactions
 plotly
-datetime
-AuthManager
-subprocess
-sys
