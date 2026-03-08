@@ -22,11 +22,11 @@ def main(params=""):
     # Bouton pour lancer l'application test.py
     if st.button("🚀 Lancer l'application test"):
         # Méthode 1 : lancer un autre Streamlit en arrière-plan
-        # subprocess.Popen(["streamlit", "run", "test.py"])
+        subprocess.Popen(["streamlit", "run", "test.py"])
         
         # Méthode 2 : utiliser st.experimental_rerun avec un flag session_state
-        st.session_state['switch_to_test'] = True
-        st.experimental_rerun()
+##        st.session_state['switch_to_test'] = True
+##        st.experimental_rerun()
     
     # Vérifier le flag pour switcher
     if st.session_state.get('switch_to_test', False):
