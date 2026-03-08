@@ -98,17 +98,6 @@ def needs_update(filepath, symbol):
 # Téléchargement intelligent
 # -------------------------
 @st.cache_data(ttl=3600)  # Cache d'une heure pour éviter trop de lectures
-import streamlit as st
-import yfinance as yf
-import pandas as pd
-import datetime as dt
-from symbolsdict import ind_global, ind_emergent, ind_commod, ind_macro, ind_sector
-
-# -------------------------
-# Paramètres
-# -------------------------
-folder = "data/"
-PERIOD = "6mo"
 
 # Jours fériés
 holidays = [
