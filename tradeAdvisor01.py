@@ -303,7 +303,7 @@ def plot_chart(df, signals, x_axis, symbol, buy_or_sell):
 # ==========================================================
 
 def main():
-    st.set_page_config(page_title="ETF Advisor DEMO", page_icon="📈", layout="wide")
+    st.set_page_config(page_title="ETF Advisor ANCIENNE DEMO", page_icon="📈", layout="wide")
 
     # --- Bouton retour ---
     if st.button("← Retour au menu"):
@@ -311,7 +311,7 @@ def main():
         st.switch_page("AuthManager.py")
 
     symbol, buy_or_sell = get_params()
-    alert_score = 65 if buy_or_sell else 50
+    alert_score = 65 if buy_or_sell else 48
 
     st.title(f"📈 ETF Advisor — {symbol}")
     st.caption(f"Mode : {'🟢 BUY' if buy_or_sell else '🔴 SELL'} | Score seuil : {alert_score} | Refresh : {REFRESH_SEC}s")
