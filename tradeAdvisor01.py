@@ -15,7 +15,6 @@ AUTH_FILE = "auth.json"
 # ==========================================================
 
 BUY_OR_SELL = False         # True = cherche BUY, False = cherche SELL
-ALERT_SCORE  = 65 if not BUY_OR_SELL else 50
 WARMUP       = 20           # barres minimum avant de scorer
 REFRESH_SEC  = 60           # intervalle de rafraîchissement (secondes)
 
@@ -77,6 +76,21 @@ def get_params():
 # STATUT DU MARCHÉ
 # ==========================================================
 
+holidays = [ dt.datetime(2025, 11, 27).date(),
+             dt.datetime(2025, 12, 25).date(),
+             dt.datetime(2026, 1, 1).date(),
+             dt.datetime(2026, 1, 19).date(),
+             dt.datetime(2026, 2, 16).date(),
+             dt.datetime(2026, 4, 3).date(),
+             dt.datetime(2026, 6, 19).date(),
+             dt.datetime(2026, 7, 3).date(),
+             dt.datetime(2026, 9, 7).date(),
+             dt.datetime(2026, 1, 19).date(),
+             dt.datetime(2026, 11, 26).date(),
+             dt.datetime(2026, 12, 25).date(),
+             dt.datetime(2027, 1, 1).date(),
+           ]
+
 def market_status():
     """Retourne ('open'|'before'|'after'|'weekend'|'holiday', heure NY)."""
     now_ny = datetime.now(NY)
@@ -84,6 +98,9 @@ def market_status():
 
     if wd >= 5:
         return "weekend", now_ny
+
+    if now_ny.date() in holidays :
+        return "holiday"
 
     h, m = now_ny.hour, now_ny.minute
     total = h * 60 + m
@@ -294,7 +311,7 @@ def main():
         st.switch_page("AuthManager.py")
 
     symbol, buy_or_sell = get_params()
-    alert_score = 65 if not buy_or_sell else 50
+    alert_score = 60 if not buy_or_sell else 45
 
     st.title(f"📈 ETF Advisor — {symbol}")
     st.caption(f"Mode : {'🟢 BUY' if buy_or_sell else '🔴 SELL'} | Score seuil : {alert_score} | Refresh : {REFRESH_SEC}s")
