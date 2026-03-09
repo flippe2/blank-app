@@ -76,19 +76,19 @@ def get_params():
 # STATUT DU MARCHÉ
 # ==========================================================
 
-holidays = [ dt.datetime(2025, 11, 27).date(),
-             dt.datetime(2025, 12, 25).date(),
-             dt.datetime(2026, 1, 1).date(),
-             dt.datetime(2026, 1, 19).date(),
-             dt.datetime(2026, 2, 16).date(),
-             dt.datetime(2026, 4, 3).date(),
-             dt.datetime(2026, 6, 19).date(),
-             dt.datetime(2026, 7, 3).date(),
-             dt.datetime(2026, 9, 7).date(),
-             dt.datetime(2026, 1, 19).date(),
-             dt.datetime(2026, 11, 26).date(),
-             dt.datetime(2026, 12, 25).date(),
-             dt.datetime(2027, 1, 1).date(),
+holidays = [ datetime(2025, 11, 27).date(),
+             datetime(2025, 12, 25).date(),
+             datetime(2026, 1, 1).date(),
+             datetime(2026, 1, 19).date(),
+             datetime(2026, 2, 16).date(),
+             datetime(2026, 4, 3).date(),
+             datetime(2026, 6, 19).date(),
+             datetime(2026, 7, 3).date(),
+             datetime(2026, 9, 7).date(),
+             datetime(2026, 1, 19).date(),
+             datetime(2026, 11, 26).date(),
+             datetime(2026, 12, 25).date(),
+             datetime(2027, 1, 1).date(),
            ]
 
 def market_status():
